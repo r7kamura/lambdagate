@@ -1,5 +1,2 @@
+require "lambdagate/api_gateway_client"
 require "lambdagate/version"
-
-module Lambdagate
-  # Your code goes here...
-end
