@@ -1,6 +1,5 @@
 require "aws4"
 require "faraday"
-require "openssl"
 require "uri"
 
 module Lambdagate
