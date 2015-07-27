@@ -21,5 +21,5 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "faraday", ">= 0.9.1"
   spec.add_runtime_dependency "faraday_middleware"
   spec.add_runtime_dependency "faraday_middleware-aws-signers-v4"
-  spec.add_runtime_dependency "swagger_parser"
+  spec.add_runtime_dependency "swagger_parser", ">= 0.0.2"
 end
