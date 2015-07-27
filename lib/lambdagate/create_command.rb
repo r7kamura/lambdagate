@@ -17,7 +17,6 @@ module Lambdagate
       delete_default_models(restapi_id: restapi_id)
 
       puts "[DEBUG] Creating resources"
-      paths = swagger.paths.map { |key, value| "#{swagger.base_path}#{key}" }
       api_gateway_client.create_resources(
         paths: paths,
         restapi_id: restapi_id,
@@ -60,6 +59,11 @@ module Lambdagate
       DEFAULT_MODEL_NAMES.map do |model_name|
         api_gateway_client.delete_model(restapi_id: restapi_id, model_name: model_name)
       end
+    end
+
+    # @return [Array<String>]
+    def paths
+      swagger.paths.map { |key, value| "#{swagger.base_path}#{key}" }
     end
 
     # @return [String, nil]
