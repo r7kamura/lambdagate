@@ -1,5 +1,6 @@
 require "aws4"
 require "faraday"
+require "json"
 require "uri"
 
 module Lambdagate
@@ -7,18 +8,18 @@ module Lambdagate
     DEFAULT_REGION = "us-east-1"
 
     class << self
-      # @param [String] access_key
+      # @param [String] access_key_id
       # @param [String] body
       # @param [Hash] headers
       # @param [String] region
       # @param [String] request_method
-      # @param [String] secret_key
+      # @param [String] secret_access_key
       # @param [String] url
       # @return [Hash]  Request headers that includes Authorization header
-      def sign(access_key:, body:, headers:, region:, request_method:, secret_key:, url:)
+      def sign(access_key_id:, body:, headers:, region:, request_method:, secret_access_key:, url:)
         AWS4::Signer.new(
-          access_key: access_key,
-          secret_key: secret_key,
+          access_key: access_key_id,
+          secret_key: secret_access_key,
           region: region,
         ).sign(
           request_method.upcase,
@@ -29,15 +30,15 @@ module Lambdagate
       end
     end
 
-    # @param [String] access_key
+    # @param [String] access_key_id
     # @param [String, nil] host
     # @param [String, nil] region
-    # @param [String] secret_key
-    def initialize(access_key:, host: nil, region: nil, secret_key:)
-      @access_key = access_key
+    # @param [String] secret_access_key
+    def initialize(access_key_id:, host: nil, region: nil, secret_access_key:)
+      @access_key_id = access_key_id
       @host = host
       @region = region
-      @secret_key = secret_key
+      @secret_access_key = secret_access_key
     end
 
     # @param [String] path
@@ -117,17 +118,18 @@ module Lambdagate
     # @return [Faraday::Response]
     def process(request_method, path, params, headers)
       headers = default_request_headers.merge(headers || {})
+      body = (params || {}).to_json
       connection.send(
         request_method,
         URI.escape(path),
-        params,
+        body,
         self.class.sign(
-          access_key: @access_key,
-          body: "", # TODO
+          access_key_id: @access_key_id,
+          body: body,
           headers: headers,
           region: region,
           request_method: request_method.to_s,
-          secret_key: @secret_key,
+          secret_access_key: @secret_access_key,
           url: "#{base_url}#{path}",
         ),
       )
