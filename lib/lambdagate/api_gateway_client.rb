@@ -69,6 +69,26 @@ module Lambdagate
       get("/restapis/#{restapi_id}/resources")
     end
 
+    # @param [false, true, nil] api_key_required
+    # @param [String, nil] authorization_type
+    # @param [String] http_method
+    # @param [Hash{String => String}, nil] request_models
+    # @param [Hash{String => String}, nil] request_parameters
+    # @param [String] resource_id
+    # @param [String] restapi_id
+    # @return [Faraday::Response]
+    def put_method(api_key_required: nil, authorization_type: nil, http_method:, request_models: nil, request_parameters: nil, resource_id:, restapi_id:)
+      put(
+        "/restapis/#{restapi_id}/resources/#{resource_id}/methods/#{http_method}",
+        {
+          apiKeyRequired: api_key_required,
+          authorizationType: authorization_type,
+          requestModels: request_models,
+          requestParameters: request_parameters,
+        }.reject { |key, value| value.nil? },
+      )
+    end
+
     private
 
     # @return [String]
