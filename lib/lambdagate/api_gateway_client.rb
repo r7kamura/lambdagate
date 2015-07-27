@@ -4,6 +4,7 @@ require "faraday_middleware/aws_signers_v4"
 
 module Lambdagate
   class ApiGatewayClient
+    DEFAULT_AUTHORIZATION_TYPE = "NONE"
     DEFAULT_REGION = "us-east-1"
     SERVICE_NAME = "apigateway"
 
@@ -63,6 +64,15 @@ module Lambdagate
       delete("/restapis/#{restapi_id}/models/#{model_name}")
     end
 
+    # @param [String] path
+    # @param [String] restapi_id
+    # @return [Hash{String => Hash}, nil]
+    def find_resource(path:, restapi_id:)
+      list_resources(restapi_id: restapi_id).body["item"].find do |item|
+        item["path"] == path
+      end
+    end
+
     # @param [String] restapi_id
     # @return [Faraday::Response]
     def list_resources(restapi_id:)
@@ -82,7 +92,7 @@ module Lambdagate
         "/restapis/#{restapi_id}/resources/#{resource_id}/methods/#{http_method}",
         {
           apiKeyRequired: api_key_required,
-          authorizationType: authorization_type,
+          authorizationType: authorization_type || DEFAULT_AUTHORIZATION_TYPE,
           requestModels: request_models,
           requestParameters: request_parameters,
         }.reject { |key, value| value.nil? },
@@ -131,15 +141,6 @@ module Lambdagate
     # @return [Faraday::Response]
     def delete(path, params = nil, headers = nil)
       process(:delete, path, params, headers)
-    end
-
-    # @param [String] path
-    # @param [String] restapi_id
-    # @return [Hash{String => Hash}, nil]
-    def find_resource(path:, restapi_id:)
-      list_resources(restapi_id: restapi_id).body["item"].find do |item|
-        item["path"] == path
-      end
     end
 
     # @param [String] path

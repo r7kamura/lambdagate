@@ -21,6 +21,20 @@ module Lambdagate
         paths: paths,
         restapi_id: restapi_id,
       )
+
+      puts "[DEBUG] Creating methods"
+      methods.each do |method|
+        resource = api_gateway_client.find_resource(path: method[:path], restapi_id: restapi_id)
+        api_gateway_client.put_method(
+          api_key_required: method[:api_key_required],
+          authorization_type: method[:authorization_type],
+          http_method: method[:http_method],
+          request_models: method[:request_models],
+          request_parameters: method[:request_parameters],
+          resource_id: resource["id"],
+          restapi_id: restapi_id,
+        )
+      end
     end
 
     private
@@ -58,6 +72,22 @@ module Lambdagate
     def delete_default_models(restapi_id:)
       DEFAULT_MODEL_NAMES.map do |model_name|
         api_gateway_client.delete_model(restapi_id: restapi_id, model_name: model_name)
+      end
+    end
+
+    # @return [Array<Hash>]
+    def methods
+      swagger.paths.flat_map do |path, path_object|
+        path_object.operations.map do |operation|
+          {
+            api_key_required: !!operation.source["x-api-key-required"],
+            authorization_type: operation.source["x-authorization-type"],
+            http_method: operation.http_method,
+            path: "#{swagger.base_path}#{path}",
+            request_models: operation.source["x-request-models"],
+            request_parameters: operation.source["x-request-parameters"],
+          }
+        end
       end
     end
 
