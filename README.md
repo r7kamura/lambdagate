@@ -18,8 +18,14 @@ aws_secret_access_key = YOUR_AWS_SECRET_ACCESS_KEY
 The `lambdagate` executable is provided to create and update your API from your API schema
 written in [Swagger](http://swagger.io/) format.
 
-```sh
+```
 $ lambdagate
 Usage: lambdagate [create|deploy|update] [command-specific-options]
+```
+
+### lambdagate create
+Creates Restapi, Resources, Methods, and so on from your swagger schema.
+
+```
 $ lambdagate create
 ```
