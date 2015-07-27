@@ -35,8 +35,8 @@ module Lambdagate
       paths.each do |path|
         parent_id = root_resource_id
         parts = path.split("/")
-        parts[1..-1].each do |part|
-          if resource = find_resource(part: part, restapi_id: restapi_id)
+        parts[1..-1].each_with_index do |part, index|
+          if resource = find_resource(path: parts[0 .. index + 1].join("/"), restapi_id: restapi_id)
             parent_id = resource["id"]
           else
             response = create_resource(
@@ -133,12 +133,12 @@ module Lambdagate
       process(:delete, path, params, headers)
     end
 
-    # @param [String] part
+    # @param [String] path
     # @param [String] restapi_id
     # @return [Hash{String => Hash}, nil]
-    def find_resource(part:, restapi_id:)
+    def find_resource(path:, restapi_id:)
       list_resources(restapi_id: restapi_id).body["item"].find do |item|
-        item["pathPart"] == part
+        item["path"] == path
       end
     end
 
