@@ -3,9 +3,7 @@ Management tool for Amazon API Gateway and Amazon Lambda.
 
 ## Requirements
 - Ruby 2.2.0 or later
-
-## Authentication
-We assume that your credentials are stored in `~/.aws/credentials`.
+- Default credentials in `~/.aws/credentials`
 
 ```
 [default]
