@@ -41,6 +41,12 @@ module Lambdagate
       @secret_access_key = secret_access_key
     end
 
+    # @param [String] name
+    # @return [Faraday::Response]
+    def create_restapi(name:)
+      post("/restapis", name: name)
+    end
+
     # @param [String] path
     # @param [Hash, nil] params
     # @param [Hash, nil] headers
@@ -118,7 +124,7 @@ module Lambdagate
     # @return [Faraday::Response]
     def process(request_method, path, params, headers)
       headers = default_request_headers.merge(headers || {})
-      body = (params || {}).to_json
+      body = request_method == :get ? "" : (params || {}).to_json
       connection.send(
         request_method,
         URI.escape(path),
