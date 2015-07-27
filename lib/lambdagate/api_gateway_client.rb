@@ -44,7 +44,7 @@ module Lambdagate
         connection.request :json
         connection.request(
           :aws_signers_v4,
-          credentials: Aws::SharedCredentials.new.credentials,
+          credentials: Aws::Credentials.new(@access_key_id, @secret_access_key),
           region: region,
           service_name: SERVICE_NAME,
         )
