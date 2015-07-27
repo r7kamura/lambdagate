@@ -4,10 +4,17 @@ require "swagger_parser"
 
 module Lambdagate
   class CreateCommand < Command
+    DEFAULT_MODEL_NAMES = %w(Empty Error)
+
     # @todo
     # @note Implementation for Lambdagate::Command
     def run
-      create_restapi
+      puts "Creating API"
+      response = create_restapi
+      restapi_id = response.body["id"]
+
+      puts "Deleting default Models"
+      delete_default_models(restapi_id: restapi_id)
     end
 
     private
@@ -38,6 +45,14 @@ module Lambdagate
     # @return [Aws::Credentials]
     def credentials
       @__credentials ||= Aws::SharedCredentials.new.credentials
+    end
+
+    # @param [String] restapi_id
+    # @return [Array<Faraday::Response>]
+    def delete_default_models(restapi_id:)
+      DEFAULT_MODEL_NAMES.map do |model_name|
+        api_gateway_client.delete_model(restapi_id: restapi_id, model_name: model_name)
+      end
     end
 
     # @return [String, nil]
