@@ -9,12 +9,19 @@ module Lambdagate
     # @todo
     # @note Implementation for Lambdagate::Command
     def run
-      puts "Creating API"
+      puts "[DEBUG] Creating API"
       response = create_restapi
       restapi_id = response.body["id"]
 
-      puts "Deleting default Models"
+      puts "[DEBUG] Deleting default models"
       delete_default_models(restapi_id: restapi_id)
+
+      puts "[DEBUG] Creating resources"
+      paths = swagger.paths.map { |key, value| "#{swagger.base_path}#{key}" }
+      api_gateway_client.create_resources(
+        paths: paths,
+        restapi_id: restapi_id,
+      )
     end
 
     private

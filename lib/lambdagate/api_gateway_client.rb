@@ -18,6 +18,38 @@ module Lambdagate
       @secret_access_key = secret_access_key
     end
 
+    # @param [String] parent_id
+    # @param [String] path_part
+    # @param [String] restapi_id
+    # @return [Faraday::Response]
+    def create_resource(parent_id:, part:, restapi_id:)
+      post("/restapis/#{restapi_id}/resources/#{parent_id}", pathPart: part).tap do |response|
+        puts "[DEBUG] Created " + response.body["path"]
+      end
+    end
+
+    # @param [Array<String>] paths
+    # @param [String] restapi_id
+    def create_resources(paths:, restapi_id:)
+      root_resource_id = get_root_resource_id(restapi_id: restapi_id)
+      paths.each do |path|
+        parent_id = root_resource_id
+        parts = path.split("/")
+        parts[1..-1].each do |part|
+          if resource = find_resource(part: part, restapi_id: restapi_id)
+            parent_id = resource["id"]
+          else
+            response = create_resource(
+              parent_id: parent_id,
+              part: part,
+              restapi_id: restapi_id,
+            )
+            parent_id = response.body["id"]
+          end
+        end
+      end
+    end
+
     # @param [String] name
     # @return [Faraday::Response]
     def create_restapi(name:)
@@ -29,6 +61,12 @@ module Lambdagate
     # @return [Faraday::Response]
     def delete_model(model_name:, restapi_id:)
       delete("/restapis/#{restapi_id}/models/#{model_name}")
+    end
+
+    # @param [String] restapi_id
+    # @return [Faraday::Response]
+    def list_resources(restapi_id:)
+      get("/restapis/#{restapi_id}/resources")
     end
 
     private
@@ -75,12 +113,31 @@ module Lambdagate
       process(:delete, path, params, headers)
     end
 
+    # @param [String] part
+    # @param [String] restapi_id
+    # @return [Hash{String => Hash}, nil]
+    def find_resource(part:, restapi_id:)
+      list_resources(restapi_id: restapi_id).body["item"].find do |item|
+        item["pathPart"] == part
+      end
+    end
+
     # @param [String] path
     # @param [Hash, nil] params
     # @param [Hash, nil] headers
     # @return [Faraday::Response]
     def get(path, params = nil, headers = nil)
       process(:get, path, params, headers)
+    end
+
+    # @param [String] restapi_id
+    # @return [String, nil]
+    def get_root_resource_id(restapi_id:)
+      list_resources(restapi_id: restapi_id).body["item"].find do |item|
+        if item["path"] == "/"
+          return item["id"]
+        end
+      end
     end
 
     # @return [String]
